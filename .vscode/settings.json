@@ -1,0 +1,10 @@
+{
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--ignore=E501"
+    ],
+    "editor.fontSize": 14,
+    "python.pythonPath": "/Users/hallberg/.virtualenvs/bett/bin/python"
+}

@@ -1,0 +1,18 @@
+Duplicate line = Cmd + Shift + D
+Move current line = Cmd + Ctrl + Up/Down
+Select current line = cmd + L
+
+
+Select the next matching characters = Cmd + D
+Unselect the next matching characters = Cmd + U
+Select all matching characters = Cmd + Ctrl + G
+
+Toggle comments (on and off) = Cmd + /
+
+https://code.visualstudio.com/docs/editor/codebasics
+
+https://code.visualstudio.com/docs/editor/editingevolved
+
+
+
+

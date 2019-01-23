@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}
+Hejsan
+{% endblock %}
+
+{% block main %}
+<h1>{{name}}</h1>
+{{ data.to_html(classes="table table-striped") | safe}}
+{% endblock %}
