@@ -1,1 +1,2 @@
 FLASK_APP=webb.py
+FLASK_ENV=development

@@ -1,4 +1,4 @@
 import get_data
-x, y = get_data.main(
-    "https://www.betexplorer.com/handball/sweden/handbollsligan/")
+url = "https://www.betexplorer.com/handball/sweden/she-women/"
+x, y = get_data.main(url)
 print(x, '\n\n', y)

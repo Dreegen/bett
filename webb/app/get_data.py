@@ -1,4 +1,3 @@
-# %% DEPENDENCIES
 # std imports
 import numpy as np
 import pandas as pd
@@ -16,10 +15,6 @@ model = load_model('v2.h5')
 graph = tf.get_default_graph()
 
 # MAIN
-# %% WEBDRIVER ACTIVATION AND SCRAPE
-
-url = "https://www.betexplorer.com/handball/sweden/she-women/"
-
 
 def main(url):
     # set wait time
@@ -30,45 +25,12 @@ def main(url):
     driver.get(url)
     WebDriverWait(driver, timeout)
 
-    # %% Data manipilation
     # get data
-    games_with_odds, games_no_odds = get_next_games(driver)
+    predicted_games = predict_games(driver)
     standings = get_standings(driver)
-    # return (next_games, standings)
 
+    return (predicted_games, standings)
 
-# %% DEV
-# Make to np.array
-x1 = np.array(games_with_odds[['Odds 1', 'Odds X', 'Odds 2']])
-x1
-
-
-# Add the input to a batch where it's the only member.
-x = (np.expand_dims(x1, 0))
-
-
-with graph.as_default():
-    columns = ['Prob 1', 'Prob X', 'Prob 2']
-    predicted = pd.DataFrame(model.predict(x1), columns=columns)
-
-
-result = pd.concat([games_with_odds, predicted], axis=1, join_axes=[games_with_odds.index])
-frames = [result, games_no_odds]
-result2 = result = pd.concat([result, games_no_odds], sort=False)
-
-result2
-
-
-df = pd.DataFrame(np.column_stack([home, away, odds_1, odds_x, odds_2, date]), columns=['Home', 'Away', 'Odds 1', 'Odds X', 'Odds 2', 'Date'])
-
-prob_1 = predicted[0]
-prob_x = predicted[0][1]
-prob_2 = predicted[0][2]
-
-
-result = pd.concat([df1, df4], axis=1, join_axes=[df1.index])
-
-# %% FUNCTIONS
 # Functiondefinitions
 
 
@@ -100,9 +62,33 @@ def get_next_games(driver):
 
     # create PD from arrays created above then split to games with and without odds
     df = pd.DataFrame(np.column_stack([home, away, odds_1, odds_x, odds_2, date]), columns=['Home', 'Away', 'Odds 1', 'Odds X', 'Odds 2', 'Date'])
+    return df
+
+
+def predict_games(driver):
+    """Return a DF with all uppcoming games where games with complete features is predicted and rest is untouched"""
+    # get next games
+    df = get_next_games(driver)
+
+    # seperate games with and without odds
     df_with_odds = df.loc[df['Odds 1'] != ' ']
     df_no_odds = df.loc[df['Odds 1'] == ' ']
-    return (df_with_odds, df_no_odds)
+
+    # predict games with odds
+    # make features to np array
+    features = np.array(df_with_odds[['Odds 1', 'Odds X', 'Odds 2']])
+
+    # use model to make predictions
+    with graph.as_default():
+        columns = ['Prob 1', 'Prob X', 'Prob 2']
+        predicted = pd.DataFrame(model.predict(features), columns=columns)
+
+    # merge predicted and not predicted games to get a complete list of upcoming games
+    df_predicted_games = pd.concat([df_with_odds, predicted], axis=1, join_axes=[df_with_odds.index])
+    all_games = pd.concat([df_predicted_games, df_no_odds], sort=False).fillna('')
+    
+
+    return (all_games)
 
 
 def get_standings(driver):
@@ -173,9 +159,7 @@ def get_standings(driver):
 # played_games = get_played_games(driver, url)
 # played_games
 
-# %% IF MAIN
-
 if __name__ == '__main__':
-    main("https://www.betexplorer.com/handball/sweden/handbollsligan/")
+    main(url)
 # url = "https://www.betexplorer.com/handball/sweden/handbollsligan/"
 # url = "https://www.betexplorer.com/handball/sweden/she-women/"
