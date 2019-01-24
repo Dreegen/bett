@@ -5,6 +5,9 @@ Hejsan
 {% endblock %}
 
 {% block main %}
-<h1>{{name}}</h1>
-{{ data.to_html(classes="table table-striped") | safe}}
+<h1>Standings</h1>
+{{ standings.to_html(classes="table table-striped") | safe}}
+
+<h1>Next games</h1>
+{{ next_games.to_html(classes="table table-striped") | safe}}
 {% endblock %}

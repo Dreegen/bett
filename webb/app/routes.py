@@ -6,19 +6,33 @@ import numpy as np
 import os
 import tensorflow as tf
 import pandas as pd
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # loads and returns a compiled model
 global model, graph
 model = load_model('v2.h5')
 graph = tf.get_default_graph()
 
+
+def sensor():
+    """ Function for test purposes. """
+    global x, y
+    x, y = get_data.main(
+        "https://www.betexplorer.com/handball/sweden/handbollsligan/")
+    print("Scheduler is alive!")
+    return (x, y)
+
+
+sched = BackgroundScheduler(daemon=True)
+sched.add_job(sensor)
+sched.add_job(sensor, 'interval', minutes=1)
+sched.start()
+
+
 @app.route('/')
 @app.route('/index')
 def index():
-    x = get_data.main(
-        "https://www.betexplorer.com/handball/sweden/handbollsligan/")
-    # x = pd.DataFrame(np.random.randn(20, 5))
-    return render_template("analysis.html", data=x)
+    return render_template("analysis.html", standings=x, next_games=y)
 
 
 @app.route('/predict')
