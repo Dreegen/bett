@@ -5,9 +5,46 @@ Hejsan
 {% endblock %}
 
 {% block main %}
-<h1>Standings</h1>
-{{ standings.to_html(classes="table table-striped") | safe}}
+<h4>Upcoming games and prediction</h4>
+<table class="table table-hover table-sm">
+    <thead class="thead-light">
+        {% for col in next_games.columns %}
+        <th>
+            {{ col }}
+        </th>
 
-<h1>Next games</h1>
-{{ next_games.to_html(classes="table table-striped") | safe}}
+        {% endfor %}
+    </thead>
+    <tbody>
+        {% for index, game in next_games.iterrows() %}
+        <tr>
+            {% for column in next_games %}
+            <td>{{ game[column] }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4>Standings</h4>
+<table class="table table-hover table-sm">
+    <thead class="thead-light">
+        {% for col in standings.columns %}
+            <th>
+                {{ col }}
+            </th>
+            
+        {% endfor %}
+    </thead>
+    <tbody>
+        {% for index, standing in standings.iterrows() %}
+        <tr>
+            {% for column in standings %}
+                <td>{{ standing[column] }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}

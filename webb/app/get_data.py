@@ -83,8 +83,13 @@ def predict_games(driver):
         columns = ['Prob 1', 'Prob X', 'Prob 2']
         predicted = pd.DataFrame(model.predict(features), columns=columns)
 
-    # merge predicted and not predicted games to get a complete list of upcoming games
+    # concat games with predicted value
     df_predicted_games = pd.concat([df_with_odds, predicted], axis=1, join_axes=[df_with_odds.index])
+
+    # round and convert predicted value to string so it will display nice when df.iterrow is used in template.html
+    df_predicted_games = df_predicted_games.round({'Prob 1': 2, 'Prob X': 2, 'Prob 2': 2}).astype(str)
+    
+    # concat predicted and not predicted games to get a complete list of upcoming games
     all_games = pd.concat([df_predicted_games, df_no_odds], sort=False).fillna('')
     
 
@@ -128,7 +133,7 @@ def get_standings(driver):
         i = i + 4
 
     # create PD from arrays created above
-    table = pd.DataFrame(np.column_stack([table_obj[1], table_obj[2], table_obj[3], table_obj[4], table_obj[5], table_obj[6], table_obj[7], table_obj[8], game0, game1, game2, game3, game4]), columns=['#', 'TEAM', 'MP', 'W', 'D', 'L', 'G', 'PTS', 'game0', 'game1', 'game2', 'game3', 'game4'])
+    table = pd.DataFrame(np.column_stack([table_obj[1], table_obj[2], table_obj[3], table_obj[4], table_obj[5], table_obj[6], table_obj[7], table_obj[8], game0, game1, game2, game3, game4]), columns=['#', 'TEAM', 'MP', 'W', 'D', 'L', 'G', 'PTS', 'G-1', 'G-2', 'G-3', 'G-4' , 'G-5'])
 
     return table
 

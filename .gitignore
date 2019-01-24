@@ -119,3 +119,4 @@ webb/app/__pycache__/get_data.cpython-36.pyc
 webb/__pycache__/webb.cpython-36.pyc
 webb/app/__pycache__/__init__.cpython-36.pyc
 webb/app/__pycache__/routes.cpython-36.pyc
+.DS_Store
