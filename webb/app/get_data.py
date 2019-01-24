@@ -7,6 +7,14 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 
+from keras.models import load_model
+import tensorflow as tf
+# loads and returns a compiled model
+global model, graph
+model = load_model('v2.h5')
+graph = tf.get_default_graph()
+
+# MAIN
 
 def main(url):
     # set wait time
@@ -18,12 +26,12 @@ def main(url):
     WebDriverWait(driver, timeout)
 
     # get data
-    # next_games = get_next_games(driver)
+    predicted_games = predict_games(driver)
     standings = get_standings(driver)
 
-    # print data #ERASE = USED FOR DEBUGG
-    # print(next_games)
-    return standings
+    return (predicted_games, standings)
+
+# Functiondefinitions
 
 
 def chrome_options():
@@ -45,16 +53,42 @@ def get_elements_text(driver, css_selector):
 def get_next_games(driver):
     """Scrapes upcomming games and return as PD."""
     # extract elements text and save to array
-    teams = get_elements_text(driver, '.table-main.table-main--leaguefixtures.hli-mb15 td:nth-of-type(2)')
+    home = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(2) a span:nth-of-type(1)')
+    away = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(2) a span:nth-of-type(2)')
     odds_1 = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(6)')
     odds_x = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(7)')
     odds_2 = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(8)')
     date = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(9)')
 
-    # create PD from arrays created above
-    next_games = pd.DataFrame(np.column_stack([teams, odds_1, odds_x, odds_2, date]),
-                              columns=['Teams', 'Odds 1', 'Odds X', 'Odds 2', 'Date'])
-    return next_games
+    # create PD from arrays created above then split to games with and without odds
+    df = pd.DataFrame(np.column_stack([home, away, odds_1, odds_x, odds_2, date]), columns=['Home', 'Away', 'Odds 1', 'Odds X', 'Odds 2', 'Date'])
+    return df
+
+
+def predict_games(driver):
+    """Return a DF with all uppcoming games where games with complete features is predicted and rest is untouched"""
+    # get next games
+    df = get_next_games(driver)
+
+    # seperate games with and without odds
+    df_with_odds = df.loc[df['Odds 1'] != ' ']
+    df_no_odds = df.loc[df['Odds 1'] == ' ']
+
+    # predict games with odds
+    # make features to np array
+    features = np.array(df_with_odds[['Odds 1', 'Odds X', 'Odds 2']])
+
+    # use model to make predictions
+    with graph.as_default():
+        columns = ['Prob 1', 'Prob X', 'Prob 2']
+        predicted = pd.DataFrame(model.predict(features), columns=columns)
+
+    # merge predicted and not predicted games to get a complete list of upcoming games
+    df_predicted_games = pd.concat([df_with_odds, predicted], axis=1, join_axes=[df_with_odds.index])
+    all_games = pd.concat([df_predicted_games, df_no_odds], sort=False).fillna('')
+    
+
+    return (all_games)
 
 
 def get_standings(driver):
@@ -103,9 +137,10 @@ def get_standings(driver):
 #     """Scrapes played games and returns as PD"""
 #     # click dropdown to show all games and not just last month
 #     driver.get(url)
+#     WebDriverWait(driver, timeout)
 #     driver.find_element_by_css_selector('.wrap-header__list:nth-child(1) > .short .closed').click()
 #     driver.find_element_by_css_selector('li.option.last').click()
-
+#
 #     # extract elements text and save to array
 #     home = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) a span:nth-of-type(1)')
 #     away = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) a span:nth-of-type(2)')
@@ -114,12 +149,17 @@ def get_standings(driver):
 #     odds_x = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(4)')
 #     odds_2 = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(5)')
 #     date = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(6)')
-
+#
+#
 #     # create PD from multiple arrays created above
 #     played_games = pd.DataFrame(np.column_stack([home, away, score, odds_1, odds_x, odds_2, date]), columns=['Home', 'Away', 'Score', 'Odds 1', 'Odds X', 'Odds 2', 'Date'])
-
+#     played_games
 #     return played_games
-
+#
+# played_games = get_played_games(driver, url)
+# played_games
 
 if __name__ == '__main__':
     main(url)
+# url = "https://www.betexplorer.com/handball/sweden/handbollsligan/"
+# url = "https://www.betexplorer.com/handball/sweden/she-women/"
