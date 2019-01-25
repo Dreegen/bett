@@ -5,10 +5,10 @@ Hejsan
 {% endblock %}
 
 {% block main %}
-<h4>Upcoming games and prediction</h4>
+<h4>Handbollsligan</h4>
 <table class="table table-hover table-sm">
     <thead class="thead-light">
-        {% for col in next_games.columns %}
+        {% for col in h1_g.columns %}
         <th>
             {{ col }}
         </th>
@@ -16,9 +16,9 @@ Hejsan
         {% endfor %}
     </thead>
     <tbody>
-        {% for index, game in next_games.iterrows() %}
+        {% for index, game in h1_g.iterrows() %}
         <tr>
-            {% for column in next_games %}
+            {% for column in h1_g %}
             <td>{{ game[column] }}</td>
             {% endfor %}
         </tr>
@@ -26,10 +26,52 @@ Hejsan
     </tbody>
 </table>
 
-<h4>Standings</h4>
+<h4>SHE</h4>
 <table class="table table-hover table-sm">
     <thead class="thead-light">
-        {% for col in standings.columns %}
+        {% for col in d1_g.columns %}
+        <th>
+            {{ col }}
+        </th>
+
+        {% endfor %}
+    </thead>
+    <tbody>
+        {% for index, game in d1_g.iterrows() %}
+        <tr>
+            {% for column in d1_g %}
+            <td>{{ game[column] }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4>Standings Handbollsligan</h4>
+<table class="table table-hover table-sm">
+    <thead class="thead-light">
+        {% for col in h1_s.columns %}
+        <th>
+            {{ col }}
+        </th>
+
+        {% endfor %}
+    </thead>
+    <tbody>
+        {% for index, standing in h1_s.iterrows() %}
+        <tr>
+            {% for column in h1_s %}
+            <td>{{ standing[column] }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4>SHE Standings</h4>
+<table class="table table-hover table-sm">
+    <thead class="thead-light">
+        {% for col in d1_s.columns %}
             <th>
                 {{ col }}
             </th>
@@ -37,9 +79,9 @@ Hejsan
         {% endfor %}
     </thead>
     <tbody>
-        {% for index, standing in standings.iterrows() %}
+        {% for index, standing in d1_s.iterrows() %}
         <tr>
-            {% for column in standings %}
+            {% for column in d1_s %}
                 <td>{{ standing[column] }}</td>
             {% endfor %}
             </tr>

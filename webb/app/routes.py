@@ -5,11 +5,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 def sensor():
     """ Function for test purposes. """
-    url = "https://www.betexplorer.com/handball/sweden/she-women/"
-    global cpl_next_games, cpl_standings
-    cpl_next_games, cpl_standings = get_data.main(url)
+    global h1_g, h1_s, d1_g, d1_s
+    h1_g, h1_s, d1_g, d1_s = get_data.main()
     print("Scheduler is alive!")
-    return (cpl_next_games, cpl_standings)
+    return (h1_g, h1_s, d1_g, d1_s)
 
 
 sched = BackgroundScheduler(daemon=True)
@@ -22,4 +21,4 @@ sched.start()
 @app.route('/index')
 @app.route('/hej')
 def index():
-    return render_template("analysis.html", standings=cpl_standings, next_games=cpl_next_games)
+    return render_template("analysis.html", h1_g=h1_g, h1_s=h1_s, d1_g=d1_g, d1_s=d1_s)
