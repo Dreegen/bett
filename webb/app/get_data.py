@@ -25,7 +25,6 @@ def main():
     # get data for h1
     url = "https://www.betexplorer.com/handball/sweden/handbollsligan/"
     h1_g = predict_games(driver, url)
-    h1_g
     h1_s = get_standings(driver, url)
 
     # get data for d1
@@ -33,7 +32,17 @@ def main():
     d1_g = predict_games(driver, url)
     d1_s = get_standings(driver, url)
 
-    return (h1_g, h1_s, d1_g, d1_s)
+    # get data for h2
+    url = "https://www.betexplorer.com/handball/sweden/allsvenskan/"
+    h2_g = predict_games(driver, url)
+    h2_s = get_standings(driver, url)
+
+    # get data for d2
+    url = "https://www.betexplorer.com/handball/sweden/allsvenskan-women/"
+    d2_g = predict_games(driver, url)
+    d2_s = get_standings(driver, url)
+
+    return (h1_g, h1_s, d1_g, d1_s, h2_g, h2_s, d2_g, d2_s)
 
 # Functiondefinitions
 

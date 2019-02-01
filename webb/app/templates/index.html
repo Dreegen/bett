@@ -5,19 +5,246 @@ Hejsan
 {% endblock %}
 
 {% block main %}
-<form method="post">
-    <div class="form-group">
-        <input autocomplete="off" autofocus class="form-control" name="odds_1" placeholder="Odds_1" type="number" step="0.01"
-            min=0 />
-    </div>
-    <div class="form-group">
-        <input autocomplete="off" autofocus class="form-control" name="odds_x" placeholder="Odds_X" type="number" step="0.01"
-            min=0 />
-    </div>
-    <div class="form-group">
-        <input autocomplete="off" autofocus class="form-control" name="odds_2" placeholder="Odds_2" type="number" step="0.01"
-            min=0 />
-    </div>
-    <button class="btn btn-primary" type="submit">Predict</button>
-</form>
+
+
+<!-- Slider Start -->
+<section class="slider" id="home">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="block">
+					<h1 class="animated fadeInUp">Sports Betting <br> &#38; Machine Learning</h1>
+					<p class="animated fadeInUp">The start of my journey into computer science and also my final project in Harvard's CS50</p>
+					<a class="btn btn-main animated fadeInUp" href="#predictions">Scroll down for the fun</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<!-- Wrapper Start -->
+
+<!-- Portfolio Start -->
+<section class="portfolio-work" id="predictions">
+	<div class="container">
+		<div class="row"></div>
+			<div class="col-md-12">
+				<div class="block">
+					<div class="portfolio-menu">
+						<ul>
+							<li class="filter" data-filter=".HOW, .SHB">How to use</li>
+							<li class="filter" data-filter=".SHB">Handbollsligan</li>
+							<li class="filter" data-filter=".SHE">SHE</li>
+							<li class="filter" data-filter=".HA">Allsvenskan (m)</li>
+						</ul>
+					</div>
+						<ul class="portfolio-contant-active text-center portfolio-popup">
+							<li class="mix HOW">
+								<div class="col-md-8 col-md-offset-2">
+									<h2 class="section-subtitle">AI-predictions</h2>
+									<p>A deep neural network has been trained on 1000+ handball games to predict the winner and estimate probability for different outcomes (Home win, Draw, Away win). The prediction and probability are displayed in a table as per below, the table also contains info about average bookmaker odds.</p>
+									<p></p>
+								<table class="table table-hover table-sm">
+									<thead>
+										{% for col in h1_g.columns %}
+										<th>
+											{{ col }}
+										</th>
+								
+										{% endfor %}
+									</thead>
+									<tbody>
+										<tr>
+											<td colspan="3"></td>
+											<td colspan="4">Displays the average bookmaker odds and odds favourite</td>
+											<td colspan="4">Displays the predicted winner and estimated probability for respective outcome. 1 equals highly probable and 0 equals highly unlikely. </td>
+										</tr>
+									</tbody>
+								</table>
+								</div>
+							</li>
+							<li class="mix SHB py=1">
+								<table class="table table-hover table-sm">
+									<thead>
+										{% for col in h1_g.columns %}
+										<th>
+											{{ col }}
+										</th>
+								
+										{% endfor %}
+									</thead>
+									<tbody>
+										{% for index, game in h1_g.iterrows() %}
+										<tr>
+											{% for column in h1_g %}
+											<td>{{ game[column] }}</td>
+											{% endfor %}
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</li>
+							<li class="mix SHE">
+								<table class="table table-hover table-sm">
+									<thead>
+										{% for col in d1_g.columns %}
+										<th>
+											{{ col }}
+										</th>
+								
+										{% endfor %}
+									</thead>
+									<tbody>
+										{% for index, game in d1_g.iterrows() %}
+										<tr>
+											{% for column in d1_g %}
+											<td>{{ game[column] }}</td>
+											{% endfor %}
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</li>
+							<li class="mix HA">
+								<table class="table table-hover table-sm">
+									<thead>
+										{% for col in h2_g.columns %}
+										<th>
+											{{ col }}
+										</th>
+								
+										{% endfor %}
+									</thead>
+									<tbody>
+										{% for index, game in h2_g.iterrows() %}
+										<tr>
+											{% for column in h2_g %}
+											<td>{{ game[column] }}</td>
+											{% endfor %}
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Call to action Start -->
+
+<section class="call-to-action bg-1 section-sm overly" id="dataset_model">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="block">
+					<h2>Quality dataset and feature selection</h2>
+					<p>Data from over 1 600 games has been collected and pre-processed to make sure that the model is trained on a
+						high quality dataset. The feature selection is under continues development and consist at this moment of team,
+						odds, difference in points and goals scored/conceded as well as form-points for last 1, 3 and 5 games. </p>
+					<a class="btn btn-main btn-solid-border" href="static/download/final_dataset.csv">Download dataset</a>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="block">
+					<h2>Model training and prediction accuracy</h2>
+					<p>The neural network consists of three layers, the two first has 25 nerons and 'relu' as activation. The final layer has 3 neurons and uses 'softmax' since it's a multidimensional classifications problem with thre possible classes. Accuracy on out of training data (random 20% of total dataset) is Loss: 0.80 and Acc: 0.67.  </p>
+					<a class="btn btn-main btn-solid-border" href="static/download/working_model.h5">Download model as HDF5</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Service Start -->
+<section class="service" id="how_its_made">
+	<div class="container">
+		<div class="row">
+			<div class="section-title">
+				<h2>How it's made</h2>
+				<!-- <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, <br> there live the
+					blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics</p> -->
+			</div>
+		</div>
+		<div class="row ">
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="icon ion-social-python"></i>
+					<h4>Python</h4>
+					<p>The back-end is written in Python. 'CS50' and 'Learn Python The Hard Way' thought me the basics. </p>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="icon ion-ios-cloud-download"></i>
+					<h4>Web Scraping</h4>
+					<p>Game data is collected by scraping multiple websites thru the framework Scrapy and saved to PostgreSQL</p>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="icon ion-code-working"></i>
+					<h4>Data pre-processing</h4>
+					<p>Pandas and Numpy are used for restructuring and calculating values for network training and predictions</p>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="icon ion-android-apps"></i>
+					<h4>Deep Neural Network</h4>
+					<p>Keras on top of TensorFlow is used as framework for building and operating the neural network</p>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="ion-android-sync"></i>
+					<h4>Automatic updates</h4>
+					<p>Apscheduler trigger scraping and prediction of upcoming games on a regular basis</p>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="ion-social-html5-outline"></i>
+					<h4>Web App</h4>
+					<p>Flask is the web framework and html, css, javascript and jinja2 are all used to produce the visual </p>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="ion-ios-infinite"></i>
+					<h4>continuous improvement</h4>
+					<p>70% accuracy is on pair with the bookmakers, work is ongoing to beat them at their own game </p>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="service-item">
+					<i class="ion-social-github"></i>
+					<h4>Source Code</h4>
+					<p>The full source code for this awesome project is available on github at Dreegen/bett </p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="feature bg-2" id="about">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6 col-md-offset-6">
+				<h2 class="section-subtitle">WHY THIS PROJECT?</h2>
+				<p>For the last decade has handball been my main focus and also my livelihood. Now as a retired sports-professional a new era begins. As project manager within digitalisation and electronic communications I felt that a deeper understanding of the code behind it all would be beneficial.</p>
+				<p>So this is it, my way of learning full-stack development thru a head-first journey compiled of trail-and-error, tutorials, stackowerflow.com, as well as completion of HarvadX's CS50</p>
+				<p></p>
+				<p><i class="icon ion-ios-email"></i>  robban.hallberg (at) gmail.com<br>
+					<i class="ion-android-contact"></i><a href="https://www.linkedin.com/in/robinhallberg/">  LinkedIn</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
 {% endblock %}
