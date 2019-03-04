@@ -6,10 +6,10 @@ import pandas as pd
 
 def sensor():
     """ Function for test purposes. """
-    global h1_g, h1_s, d1_g, d1_s, h2_g, h2_s, d2_g, d2_s
-    h1_g, h1_s, d1_g, d1_s, h2_g, h2_s, d2_g, d2_s = get_data.main()
+    global h1, d1, h2, d2
+    h1, d1, h2, d2 = get_data.main()
     print("Scheduler is alive!")
-    return (h1_g, h1_s, d1_g, d1_s, h2_g, h2_s, d2_g, d2_s)
+    return (h1, d1, h2, d2)
 
 
 sched = BackgroundScheduler(daemon=True)
@@ -21,7 +21,7 @@ sched.start()
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template("index.html", h1_g=h1_g, d1_g=d1_g, h2_g=h2_g, d2_g=d2_g)
+    return render_template("index.html", h1=h1, d1=d1, h2=h2, d2=d2)
 
 
 # @app.route('/dataset')

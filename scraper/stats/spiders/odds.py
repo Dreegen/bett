@@ -5,7 +5,7 @@ import os
 
 class QuotesSpider(scrapy.Spider):
     name = "odds"
-    path = 'file://´'+os.getcwd()+'/explore_html/0.html'
+    path = 'file://´' + os.getcwd() + '/explore_html/0.html'
     start_urls = [path, ]
 
     def parse(self, response):

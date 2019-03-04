@@ -1,5 +1,6 @@
 # %% Dependencies
 # import matplotlib.pyplot as plt
+import os
 
 import tensorflow as tf
 from tensorflow import keras
@@ -17,9 +18,12 @@ from numpy import argmax
 import sklearn
 from sklearn.model_selection import train_test_split
 
-# %% IMPORT DATA
-loc = 'data/'
-data = pd.read_csv('data/final_dataset.csv')
+# # %% IMPORT DATA
+# cwd = os.getcwd()
+loc = os.getcwd()+'/model/data/'
+# data = pd.read_csv(loc+'final_dataset.csv')
+
+data = pd.read_pickle(loc+'stats.pkl')
 
 # %% PREPROCESS
 # drop rows with empty cells
@@ -74,26 +78,4 @@ df = pd.DataFrame(rows_list2, columns=columnsTitles)
 df.to_csv(loc + "predicted_dataset.csv")
 
 # %% Save the model
-model.save('working_model.h5')  # creates a HDF5 file 'my_model.h5'
-
-#### DEV ####
-# odds_1 = 1.3
-# odds_x = 13
-# odds_2 = 4.2
-#
-# # Make to np.array
-# x = np.array([odds_1, odds_x, odds_2])
-#
-# # Add the input to a batch where it's the only member.
-# x = (np.expand_dims(x, 0))
-#
-# model.predict(x)
-
-# # IF NEED FOR JSON AND SEPERATE WEIGHTS
-# # serialize model to JSON
-# model_json = model.to_json()
-# with open("model.json", "w") as json_file:
-#     json_file.write(model_json)
-# # serialize weights to HDF5
-# model.save_weights("model.h5")
-# print("Saved model to disk")
+model.save('working_model2.h5')  # creates a HDF5 file 'my_model.h5'

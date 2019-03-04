@@ -1,7 +1,7 @@
 import scrapy
 from datetime import datetime, timedelta
 from stats.items import OddsItem
-from stats.startUrls_results import Austria, Croatia, Czech_republic, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Iceland, Norway, Poland, Portugal, Romania, Russia, Slovakia, Spain, Sweden, Ukraine
+from stats.startUrls_results import urls
 
 
 def calc_ftr(home_score, guest_score):
@@ -26,22 +26,22 @@ def calc_date(date):
         dates = date + '2019'
     else:
         dates = date
-    return dates
+    return datetime.strptime(dates, "%d.%m.%Y")
 
 
 def split_odds(odds):
     if odds:
-        odds_1 = odds[0]
-        odds_x = odds[1]
-        odds_2 = odds[2]
+        odds_1 = float(odds[0])
+        odds_x = float(odds[1])
+        odds_2 = float(odds[2])
     else:
-        odds_1, odds_x, odds_2 = "", "", ""
+        odds_1, odds_x, odds_2 = None, None, None
     return (odds_1, odds_x, odds_2)
 
 
 class QuotesSpider(scrapy.Spider):
     name = "prevGames"
-    start_urls = Sweden
+    start_urls = urls
     # start_urls = ['https://www.betexplorer.com/handball/sweden/elitserien-2004-2005/results/?stage=YTUx7d41']
 
     def parse(self, response):
@@ -60,11 +60,11 @@ class QuotesSpider(scrapy.Spider):
                     "td[@class='h-text-right h-text-no-wrap']//text()").extract_first()
                 date = calc_date(date)
 
-                # score
+                # score MUST MAKE INTE NOT WORKING NOW
                 score = row.xpath(
                     "td[@class='h-text-center']//text()").extract_first()
-                home_score = score.split(':', 1)[0]
-                guest_score = score.split(':', 1)[1]
+                home_score = int(score.split(':', 1)[0])
+                guest_score = int(score.split(':', 1)[1])
                 ftr = calc_ftr(home_score, guest_score)
 
                 # team names
@@ -78,7 +78,7 @@ class QuotesSpider(scrapy.Spider):
                 odds_1, odds_x, odds_2 = split_odds(odds)
 
                 # explore ID
-                explore_id = row.xpath("td[2]//@href").extract_first()
+                explore_id = 'https://www.betexplorer.com' + row.xpath("td[2]//@href").extract_first()
 
                 oddsItem = OddsItem(
                     country=country,

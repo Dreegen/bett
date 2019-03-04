@@ -21,7 +21,7 @@ NEWSPIDER_MODULE = 'stats.spiders'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
-SPLASH_URL = 'http://192.168.59.103:8050'
+SPLASH_URL = 'http://localhost:8050'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 32

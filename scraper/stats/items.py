@@ -37,6 +37,7 @@ class ResultItem(scrapy.Item):
 
 
 class OddsItem(scrapy.Item):
+    country = scrapy.Field()
     season = scrapy.Field()
     date = scrapy.Field()
     score = scrapy.Field()

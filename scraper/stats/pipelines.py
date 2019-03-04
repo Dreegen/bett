@@ -39,7 +39,7 @@ class StatsPipeline(object):
             return item
 
         if isinstance(item, items.OddsItem):
-            self.cur.execute("insert into odds(season, date, score, home_score, guest_score, home_team, guest_team, odds_1, odds_x, odds_2, explore_id, ftr) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                             (item['season'], item['date'], item['score'], item['home_score'], item['guest_score'], item['home_team'], item['guest_team'], item['odds_1'], item['odds_x'], item['odds_2'], item['explore_id'], item['ftr']))
+            self.cur.execute("insert into odds(country, season, date, score, home_score, guest_score, home_team, guest_team, odds_1, odds_x, odds_2, explore_id, ftr) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                             (item['country'], item['season'], item['date'], item['score'], item['home_score'], item['guest_score'], item['home_team'], item['guest_team'], item['odds_1'], item['odds_x'], item['odds_2'], item['explore_id'], item['ftr']))
             self.connection.commit()
             return item

@@ -11,40 +11,8 @@ from keras.models import load_model
 import tensorflow as tf
 # loads and returns a compiled model
 global model, graph
-model = load_model('working_model.h5')
+model = load_model('model_201902182100.h5')
 graph = tf.get_default_graph()
-
-
-# MAIN
-
-
-def main():
-    # start driver and wait
-    driver = webdriver.Chrome(options=chrome_options())
-
-    # get data for h1
-    url = "https://www.betexplorer.com/handball/sweden/handbollsligan/"
-    h1_g = predict_games(driver, url)
-    h1_s = get_standings(driver, url)
-
-    # get data for d1
-    url = "https://www.betexplorer.com/handball/sweden/she-women/"
-    d1_g = predict_games(driver, url)
-    d1_s = get_standings(driver, url)
-
-    # get data for h2
-    url = "https://www.betexplorer.com/handball/sweden/allsvenskan/"
-    h2_g = predict_games(driver, url)
-    h2_s = get_standings(driver, url)
-
-    # get data for d2
-    url = "https://www.betexplorer.com/handball/sweden/allsvenskan-women/"
-    d2_g = predict_games(driver, url)
-    d2_s = get_standings(driver, url)
-
-    return (h1_g, h1_s, d1_g, d1_s, h2_g, h2_s, d2_g, d2_s)
-
-# Functiondefinitions
 
 
 def chrome_options():
@@ -73,68 +41,76 @@ def get_next_games(driver, url):
     WebDriverWait(driver, timeout)
 
     # extract elements text and save to array
-    home = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(2) a span:nth-of-type(1)')
-    away = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(2) a span:nth-of-type(2)')
-    odds_1 = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(6)')
-    odds_x = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(7)')
-    odds_2 = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(8)')
-    date = get_elements_text(driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(9)')
+    homeTeam = get_elements_text(
+        driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(2) a span:nth-of-type(1)')
+    awayTeam = get_elements_text(
+        driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(2) a span:nth-of-type(2)')
+    odds_1 = get_elements_text(
+        driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(6)')
+    odds_x = get_elements_text(
+        driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(7)')
+    odds_2 = get_elements_text(
+        driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(8)')
+    date = get_elements_text(
+        driver, '.table-main.table-main--leaguefixtures.h-mb15 td:nth-of-type(9)')
 
     # create PD from arrays created above then split to games with and without odds
-    df = pd.DataFrame(np.column_stack([home, away, odds_1, odds_x, odds_2, date]), columns=['Home', 'Away', 'Odds 1', 'Odds X', 'Odds 2', 'Date'])
+    df = pd.DataFrame(np.column_stack([homeTeam, awayTeam, odds_1, odds_x, odds_2, date]), columns=[
+                      'homeTeam', 'awayTeam', 'odds1', 'oddsX', 'odds2', 'Date'])
     return df
 
 
-def predict_games(driver, url):
-    """Return a DF with all uppcoming games where games with complete features is predicted and rest is untouched"""
-    # get next games
-    df = get_next_games(driver, url)
+def get_form(df):
+    # Gets the form points.
+    def get_points(result):
+        if result == 'W':
+            return 2
+        elif result == 'D':
+            return 1
+        else:
+            return 0
 
-    # seperate games with and without odds
-    df_with_odds = df.loc[df['Odds 1'] != ' ']
-    df_no_odds = df.loc[df['Odds 1'] == ' ']
+    def get_form_points(string):
+        sum = 0
+        for letter in string:
+            sum += get_points(letter)
+        return sum
 
-    df_no_odds['Odds 1'] = 'Not'
-    df_no_odds['Odds X'] = 'Yet'
-    df_no_odds['Odds 2'] = 'Available'
-    
+    df['FormPtsStr'] = df['M1'] + df['M2'] + df['M3'] + df['M4'] + df['M5']
 
-    # predict games with odds
-    # make features to np array
-    features = np.array(df_with_odds[['Odds 1', 'Odds X', 'Odds 2']].astype(float))
+    df['FormPts'] = df['FormPtsStr'].apply(get_form_points)
 
-    # use model to make predictions
-    with graph.as_default():
-        predicted = np.array(model.predict(features))
+    # Identify Win/Loss Streaks if any.
+    def get_3game_ws(string):
+        if string[-3:] == 'WWW':
+            return 1
+        else:
+            return 0
 
-    # process predictions and odds so that "Odds Fav" and "Predicted Fav" is appendet to each game
-    rows_list = []
-    odds_names = ['Away', 'Draw', 'Home']
-    odds_order = ['Home', 'Draw', 'Away']
-    for i in range(features.shape[0]):
-        odds = features[i]
-        prob = predicted[i]
-        dict = {'Prob 1': prob[2], 'Prob X': prob[1], 'Prob 2': prob[0],
-                'Predicted': odds_names[np.argmax(prob)], 'Odds Fav': odds_order[np.argmin(odds)]}
-        rows_list.append(dict)
+    def get_5game_ws(string):
+        if string == 'WWWWW':
+            return 1
+        else:
+            return 0
 
-    first_columns = ['Odds Fav', 'Predicted', 'Prob 1', 'Prob X', 'Prob 2']
-    list_predicted = pd.DataFrame(rows_list, columns=first_columns)
+    def get_3game_ls(string):
+        if string[-3:] == 'LLL':
+            return 1
+        else:
+            return 0
 
-    # concat games with predicted value
-    df_predicted_games = pd.concat([df_with_odds, list_predicted], axis=1, join_axes=[df_with_odds.index])
+    def get_5game_ls(string):
+        if string == 'LLLLL':
+            return 1
+        else:
+            return 0
 
-    # round and convert predicted value to string so it will display nice when df.iterrow is used in template.html
-    df_predicted_games = df_predicted_games.round({'Prob 1': 2, 'Prob X': 2, 'Prob 2': 2}).astype(str)
+    df['WinStreak3'] = df['FormPtsStr'].apply(get_3game_ws)
+    df['WinStreak5'] = df['FormPtsStr'].apply(get_5game_ws)
+    df['LossStreak3'] = df['FormPtsStr'].apply(get_3game_ls)
+    df['LossStreak5'] = df['FormPtsStr'].apply(get_5game_ls)
 
-    # concat predicted and not predicted games to get a complete list of upcoming games
-    all_games = pd.concat([df_predicted_games, df_no_odds], sort=False).fillna('')
-
-    # change order of columns in DataFrame
-    columns_order = ['Date', 'Home', 'Away', 'Odds Fav', 'Odds 1', 'Odds X', 'Odds 2', 'Predicted', 'Prob 1', 'Prob X', 'Prob 2']
-    all_games = all_games[columns_order]
-
-    return (all_games)
+    return df
 
 
 def get_standings(driver, url):
@@ -157,7 +133,8 @@ def get_standings(driver, url):
         table_obj.append([x.text for x in content])
 
     # extract team form and save to array
-    form_obj = driver.find_elements_by_css_selector('.col_form span:not(.form-s)')
+    form_obj = driver.find_elements_by_css_selector(
+        '.col_form span:not(.form-s)')
     forms = [x.get_attribute("class") for x in form_obj]
 
     # convert attribute text to normal langue (w for win, d for draw, l for loss)
@@ -171,47 +148,154 @@ def get_standings(driver, url):
 
     # convert table_obj to list to prepare for pd-frame
     game0, game1, game2, game3, game4 = [], [], [], [], []
-    for i in range(len(table_obj[1])):
+    for i in range(0, len(forms), 5):
         game0.append(forms[i])
         game1.append(forms[i + 1])
         game2.append(forms[i + 2])
         game3.append(forms[i + 3])
         game4.append(forms[i + 4])
-        i = i + 4
 
     # create PD from arrays created above
-    table = pd.DataFrame(np.column_stack([table_obj[1], table_obj[2], table_obj[3], table_obj[4], table_obj[5], table_obj[6], table_obj[7], table_obj[8], game0, game1, game2, game3, game4]), columns=['#', 'TEAM', 'MP', 'W', 'D', 'L', 'G', 'PTS', 'G-1', 'G-2', 'G-3', 'G-4', 'G-5'])
+    df = pd.DataFrame(np.column_stack([table_obj[1], table_obj[2], table_obj[3], table_obj[4], table_obj[5], table_obj[6], table_obj[7],
+                                       table_obj[8], game0, game1, game2, game3, game4]), columns=['#', 'TEAM', 'MP', 'W', 'D', 'L', 'G', 'PTS', 'M1', 'M2', 'M3', 'M4', 'M5'])
 
-    return table
+    # splits score in format xx:yy to colFoo = xx, colBaz=yy
+    df1 = df.G.str.split(pat=":", expand=True)
+    df1.rename(columns={0: 'GS', 1: 'GC'}, inplace=True)
+
+    # calculates goaldifference and concats to main df
+    df1['GDiff'] = df1['GS'].astype(int) - df1['GC'].astype(int)
+    df = pd.concat([df, df1], axis=1, sort=False)
+    df.drop(columns=['#', 'G'], axis=1, inplace=True)
+
+    df = get_form(df)
+    df.set_index('TEAM', inplace=True)
+
+    return df
 
 
-# def get_played_games(driver, url):
-#     """Scrapes played games and returns as PD"""
-#     # click dropdown to show all games and not just last month
-#     driver.get(url)
-#     WebDriverWait(driver, timeout)
-#     driver.find_element_by_css_selector('.wrap-header__list:nth-child(1) > .short .closed').click()
-#     driver.find_element_by_css_selector('li.option.last').click()
-#
-#     # extract elements text and save to array
-#     home = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) a span:nth-of-type(1)')
-#     away = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) a span:nth-of-type(2)')
-#     score = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(2)')
-#     odds_1 = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(3)')
-#     odds_x = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(4)')
-#     odds_2 = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(5)')
-#     date = get_elements_text(driver, '.table-main.h-mb15:not(.table-main--leaguefixtures) td:nth-of-type(6)')
-#
-#
-#     # create PD from multiple arrays created above
-#     played_games = pd.DataFrame(np.column_stack([home, away, score, odds_1, odds_x, odds_2, date]), columns=['Home', 'Away', 'Score', 'Odds 1', 'Odds X', 'Odds 2', 'Date'])
-#     played_games
-#     return played_games
-#
-# played_games = get_played_games(driver, url)
-# played_games
+def seperate_dfs(df):
+    # seperate games with and without odds
+    df_no_odds = df.loc[df['odds1'] == ' '].copy()
+    df = df.loc[df['odds1'] != ' '].copy()
+    df_no_odds['odds1'] = 'Not'
+    df_no_odds['oddsX'] = 'Yet'
+    df_no_odds['odds2'] = 'Available'
+    return (df, df_no_odds)
+
+
+def prep_features(df, standings):
+    if 'HTGD' not in df:
+        df = df.reindex(columns=df.columns.tolist() +
+                        ['HTGD', 'ATGD', 'HTP', 'ATP', 'HTFormPts', 'ATFormPts','MW'])
+
+    # combine standings and next games
+    nMatches = df.shape[0]
+
+    for i in range(nMatches):
+        ht = df.loc[i].homeTeam
+        at = df.loc[i].awayTeam
+
+        # GoalDifference
+        df.at[i, 'HTGD'] = standings.loc[ht]['GDiff']
+        df.at[i, 'ATGD'] = standings.loc[at]['GDiff']
+
+        # Points
+        df.at[i, 'HTP'] = standings.loc[ht]['PTS']
+        df.at[i, 'ATP'] = standings.loc[at]['PTS']
+
+        # FormPoints
+        df.at[i, 'HTFormPts'] = standings.loc[ht]['FormPts']
+        df.at[i, 'ATFormPts'] = standings.loc[at]['FormPts']
+
+        # GameWeek
+        df.at[i, 'MW'] = int(standings.loc[ht]['MP'])
+
+    # Diff in points
+    df['DiffPts'] = df['HTP'] - df['ATP']
+
+    # Diff in goaldifference
+    df['DiffGD'] = df['HTGD'] - df['ATGD']
+
+    # Diff in form points
+    df['DiffFormPts'] = df['HTFormPts'] - df['ATFormPts']
+
+    # Scale DiffPts , DiffFormPts, HTGD, ATGD by Matchweek.
+    cols = ['DiffPts', 'DiffFormPts', 'DiffGD']
+
+    for col in cols:
+        df[col] = df[col] / df.MW
+
+    return df
+
+
+def predict_games(driver, url):
+    standings = get_standings(driver, url)
+    df = get_next_games(driver, url)
+    df_with_odds, df_no_odds = seperate_dfs(df)
+    df = prep_features(df_with_odds, standings)
+
+    # select features and make np array
+    featuresList = ['odds1', 'oddsX', 'odds2',
+                    'DiffFormPts', 'DiffPts', 'DiffGD']
+    features = np.array(df[featuresList].astype(float))
+
+    # use model to make predictions
+    with graph.as_default():
+        predicted = model.predict(features)
+
+    # process predictions and odds so that "Odds Fav" and "Predicted Fav" is appendet to each game
+    rows_list = []
+    odds_names = ['Away', 'Draw', 'Home']
+    odds_order = ['Home', 'Draw', 'Away']
+    for i in range(features.shape[0]):
+        odds = features[i]
+        prob = predicted[i]
+        dict = {'prob1': prob[2], 'probX': prob[1], 'prob2': prob[0],
+                'predicted': odds_names[np.argmax(prob)], 'oddsFav': odds_order[np.argmin(odds[0:3])]}
+        rows_list.append(dict)
+
+    first_columns = ['oddsFav', 'predicted', 'prob1', 'probX', 'prob2']
+    list_predicted = pd.DataFrame(rows_list, columns=first_columns)
+
+    # concat games with predicted value
+    df_predicted_games = pd.concat(
+        [df_with_odds, list_predicted], axis=1, join_axes=[df_with_odds.index])
+
+    # round and convert predicted value to string so it will display nice when df.iterrow is used in template.html
+    df_predicted_games = df_predicted_games.round(
+        {'prob1': 2, 'probX': 2, 'prob2': 2}).astype(str)
+
+    # concat predicted and not predicted games to get a complete list of upcoming games
+    all_games = pd.concat(
+        [df_predicted_games, df_no_odds], sort=False).fillna('')
+
+    # change order of columns in DataFrame
+    columns_order = ['Date', 'homeTeam', 'awayTeam', 'oddsFav',
+                     'odds1', 'oddsX', 'odds2', 'predicted', 'prob1', 'probX', 'prob2']
+    all_games = all_games[columns_order]
+
+    return all_games
+
+
+def predict_leauge(url):
+    driver = webdriver.Chrome(options=chrome_options())
+    df = predict_games(driver, url)
+    return(df)
+
+
+def main():
+    h1 = predict_leauge(
+        "https://www.betexplorer.com/handball/sweden/handbollsligan/")
+    d1 = predict_leauge(
+        "https://www.betexplorer.com/handball/sweden/she-women/")
+    h2 = predict_leauge(
+        "https://www.betexplorer.com/handball/sweden/allsvenskan/")
+    d2 = predict_leauge(
+        "https://www.betexplorer.com/handball/sweden/allsvenskan-women/")
+
+    return (h1, d1, h2, d2)
+
 
 if __name__ == '__main__':
     main()
-# url = "https://www.betexplorer.com/handball/sweden/handbollsligan/"
-# url = "https://www.betexplorer.com/handball/sweden/she-women/"
